@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	apiKey     = "eb17ea9e197a0138b90c704818474679"
+	apiKey     = "your API key"
 	apiAddress = "http://api.openweathermap.org"
 )
 
