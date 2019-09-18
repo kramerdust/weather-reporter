@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math"
 	"net/http"
 	"net/url"
@@ -14,6 +13,7 @@ import (
 
 const forecastMethod = "/data/2.5/forecast"
 const curWeatherMethod = "/data/2.5/weather"
+
 
 func NewOWM(apiKey, apiAddress string) Forecaster {
 	return &owmForecaster{
@@ -62,6 +62,8 @@ func (o *owmForecaster) GetCurrentWeather(city string) (w Weather, err error) {
 	q := req.URL.Query()
 	q.Add("q", city)
 	q.Add("APPID", o.apiKey)
+	req.URL.RawQuery = q.Encode()
+
 	resp, err := o.httpClient.Do(req)
 	if err != nil {
 		return
@@ -69,6 +71,7 @@ func (o *owmForecaster) GetCurrentWeather(city string) (w Weather, err error) {
 
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("bad status code: %d", resp.StatusCode)
+		return
 	}
 
 	data, _ := ioutil.ReadAll(resp.Body)
@@ -129,7 +132,7 @@ func (o *owmForecaster) downloadForecast(city string) error {
 	}
 
 	data, _ := ioutil.ReadAll(resp.Body)
-	log.Println(string(data))
+
 	wResponse := &owmForecastResponse{}
 	err = json.Unmarshal(data, wResponse)
 	if err != nil {
