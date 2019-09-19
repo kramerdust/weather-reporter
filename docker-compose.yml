@@ -1,0 +1,15 @@
+version: '2.1'
+
+services:
+  forecaster:
+    image: forecaster
+    container_name: forecaster-api
+    build:
+      context: .
+      dockerfile: ./cmd/Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      GOPATH: '/go'
+    env_file:
+      - '.env'

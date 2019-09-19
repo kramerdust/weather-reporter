@@ -14,7 +14,6 @@ import (
 const forecastMethod = "/data/2.5/forecast"
 const curWeatherMethod = "/data/2.5/weather"
 
-
 func NewOWM(apiKey, apiAddress string) Forecaster {
 	return &owmForecaster{
 		httpClient:        &http.Client{},
@@ -22,6 +21,7 @@ func NewOWM(apiKey, apiAddress string) Forecaster {
 		apiAddress:        apiAddress,
 		relevantForecast:  make(map[string][]Weather),
 		forecastExpiresAt: make(map[string]time.Time),
+		weatherLastCheck: time.Time{},
 	}
 }
 
@@ -31,6 +31,8 @@ type owmForecaster struct {
 	apiAddress        string
 	relevantForecast  map[string][]Weather
 	forecastExpiresAt map[string]time.Time
+	currentWeather    Weather
+	weatherLastCheck time.Time
 }
 
 //easyjson:json
@@ -55,6 +57,11 @@ type main struct {
 }
 
 func (o *owmForecaster) GetCurrentWeather(city string) (w Weather, err error) {
+	if o.weatherLastCheck.Add(time.Minute).After(time.Now()) {
+		w = o.currentWeather
+		return
+	}
+
 	req, err := http.NewRequest(http.MethodGet, o.apiAddress+curWeatherMethod, nil)
 	if err != nil {
 		return
@@ -84,6 +91,9 @@ func (o *owmForecaster) GetCurrentWeather(city string) (w Weather, err error) {
 	w.Temperature = kelvinToCelsius(wResponse.Main.Temperature)
 
 	w.Unit = "celsius"
+
+	o.currentWeather = w
+	o.weatherLastCheck = time.Now()
 
 	return
 }
@@ -153,7 +163,7 @@ func (o *owmForecaster) downloadForecast(city string) error {
 	}
 
 	o.relevantForecast[city] = weathers
-	o.forecastExpiresAt[city] = time.Now().Add(time.Hour * 24 * 5)
+	o.forecastExpiresAt[city] = time.Now().Add(time.Hour)
 
 	return nil
 }

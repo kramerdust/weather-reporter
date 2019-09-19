@@ -26,7 +26,7 @@ func Test_OWM_Forecast(t *testing.T) {
 
 func Test_OWM_CurWeather(t *testing.T) {
 	prepare(t)
-	
+
 	owm:= forecaster.NewOWM(apiKey, apiAddress)
 	w, err := owm.GetCurrentWeather("Moscow")
 	if err != nil {
