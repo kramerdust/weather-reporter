@@ -6,7 +6,7 @@ services:
     container_name: forecaster-api
     build:
       context: .
-      dockerfile: ./cmd/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - '3000:3000'
     environment:
