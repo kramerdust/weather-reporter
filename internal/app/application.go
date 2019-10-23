@@ -6,6 +6,7 @@ import (
 	"github.com/kramerdust/weather-reporter/internal/forecaster"
 	"github.com/valyala/fasthttp"
 	"log"
+	"os"
 	"unicode/utf8"
 )
 
@@ -16,6 +17,7 @@ type Application struct {
 }
 
 func NewApp(fc forecaster.Forecaster) *Application {
+	log.SetOutput(os.Stdout)
 	r := router.New()
 	return &Application{
 		fc: fc,
@@ -65,6 +67,7 @@ func (a *Application) GetForecast(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		return
 	}
+	log.Printf("Response: %s\nClient: %s\n", string(data), ctx.RemoteIP().String())
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.Response.Header.Add(fasthttp.HeaderContentType, "application/json; charset=utf-8")
 	ctx.Response.BodyWriter().Write(data)

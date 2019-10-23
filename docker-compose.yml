@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   forecaster:
-    image: forecaster
+    image: kramerdust/forecaster
     container_name: forecaster-api
     build:
       context: .
