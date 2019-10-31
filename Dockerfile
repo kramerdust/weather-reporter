@@ -1,5 +1,4 @@
 FROM golang:stretch
-RUN apt update
 
 WORKDIR /app
 COPY . .
