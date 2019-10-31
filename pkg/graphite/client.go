@@ -1,6 +1,7 @@
 package graphite
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"time"
@@ -28,6 +29,11 @@ func (gc *Client) AddMetric(path, value string) error {
 	if err != nil {
 		return err
 	}
+
+	sc := bufio.NewScanner(gc.tcpClient)
+	sc.Scan()
+	text := sc.Text()
+	fmt.Println(text)
 
 	return nil
 }
