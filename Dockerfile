@@ -6,4 +6,4 @@ COPY . .
 RUN go install -v ./cmd/service.go
 
 ENTRYPOINT /go/bin/service
-EXPOSE 3000
+EXPOSE 8080
