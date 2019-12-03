@@ -20,6 +20,5 @@ func main() {
 
 	f := forecaster.NewOWM(apiKey, apiAddr)
 	application := app.NewApp(f)
-	application.Init()
 	log.Fatal(application.Run(port))
 }

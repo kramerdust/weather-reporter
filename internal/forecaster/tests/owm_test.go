@@ -35,6 +35,16 @@ func Test_OWM_CurWeather(t *testing.T) {
 	log.Println(w)
 }
 
+func Test_OWM_BadCityCurWeather(t *testing.T) {
+	prepare(t)
+
+	owm := forecaster.NewOWM(apiKey, apiAddress)
+	_, err := owm.GetCurrentWeather("Moscowww")
+	if !forecaster.IsNotFound(err) {
+		t.Errorf("expected not found but got: %s", err.Error())
+	}
+}
+
 func prepare(t *testing.T) {
 	var err error
 	apiKey, err = forecaster.GetAPIKeyFromEnv()

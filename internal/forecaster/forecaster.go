@@ -19,7 +19,6 @@ type Forecaster interface {
 	GetForecast(city string, dt int64) (Weather, error)
 }
 
-
 func GetAPIKeyFromEnv() (string, error) {
 	return getEnv(apiKeyEnv)
 }
@@ -27,7 +26,6 @@ func GetAPIKeyFromEnv() (string, error) {
 func GetAPIAddressFromEnv() (string, error) {
 	return getEnv(apiAddrEnv)
 }
-
 
 func getEnv(key string) (string, error) {
 	if val, found := os.LookupEnv(key); found {

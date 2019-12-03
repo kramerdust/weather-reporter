@@ -80,7 +80,10 @@ func (o *owmForecaster) GetCurrentWeather(city string) (w Weather, err error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("bad status code: %d", resp.StatusCode)
+		err = &fcError{
+			code: resp.StatusCode,
+			msg:  fmt.Sprintf("bad status code: %d", resp.StatusCode),
+		}
 		return
 	}
 
@@ -140,7 +143,10 @@ func (o *owmForecaster) downloadForecast(city string) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("bad status code: %d", resp.StatusCode)
+		err = &fcError{
+			code: resp.StatusCode,
+			msg:  fmt.Sprintf("bad status code: %d", resp.StatusCode),
+		}
 		return err
 	}
 
