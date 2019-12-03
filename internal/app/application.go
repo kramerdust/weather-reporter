@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"github.com/fasthttp/router"
 	"github.com/kramerdust/weather-reporter/internal/forecaster"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/fasthttpadaptor"
 	"log"
 	"os"
 	"unicode/utf8"
@@ -28,6 +30,7 @@ func NewApp(fc forecaster.Forecaster) *Application {
 func (a *Application) Init() {
 	a.r.GET("/v1/forecast", a.GetForecast)
 	a.r.GET("/v1/current", a.GetCurrent)
+	a.r.GET("/v1/metrics", fasthttpadaptor.NewFastHTTPHandler(promhttp.Handler()))
 }
 
 func (a *Application) Run(port string) error {
