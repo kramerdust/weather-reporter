@@ -9,6 +9,7 @@ import (
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpadaptor"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -18,9 +19,7 @@ type Application struct {
 	fc forecaster.Forecaster
 	r  *router.Router
 
-	promOK       prometheus.Counter
-	promNotFound prometheus.Counter
-	promIntErr   prometheus.Counter
+	promStatuses *prometheus.CounterVec
 	promRespTime prometheus.Histogram
 }
 
@@ -45,16 +44,13 @@ func (a *Application) initHandlers() {
 }
 
 func (a *Application) initMetrics() {
-	a.promOK = prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "forecaster_http_200",
-	})
-	a.promNotFound = prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "forecaster_http_404",
-	})
-	a.promIntErr = prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "forecaster_http_500",
-	})
-	prometheus.MustRegister(a.promNotFound, a.promOK, a.promIntErr)
+	a.promStatuses = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "forecaster",
+		Name:      "status_code_counter",
+	},
+		[]string{"method", "code"},
+	)
+	prometheus.MustRegister(a.promStatuses)
 
 	a.promRespTime = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Name:    "forecaster_response_time",
@@ -74,14 +70,7 @@ func (a *Application) metrics(next fasthttp.RequestHandler) fasthttp.RequestHand
 
 		next(ctx)
 
-		switch ctx.Response.StatusCode() {
-		case fasthttp.StatusOK:
-			a.promOK.Inc()
-		case fasthttp.StatusNotFound:
-			a.promNotFound.Inc()
-		case fasthttp.StatusInternalServerError:
-			a.promIntErr.Inc()
-		}
+		a.promStatuses.WithLabelValues(string(ctx.Method()), strconv.Itoa(ctx.Response.StatusCode())).Inc()
 
 		total := time.Now().Sub(start).Seconds()
 		a.promRespTime.Observe(total)
