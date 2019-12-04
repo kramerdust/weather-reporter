@@ -58,13 +58,6 @@ type main struct {
 }
 
 func (o *owmForecaster) GetCurrentWeather(city string) (w Weather, err error) {
-	if t, ok := o.weatherLastCheck[city]; ok {
-		if t.Add(time.Minute).After(time.Now()) {
-			w = o.currentWeather[city]
-			return
-		}
-	}
-
 	req, err := http.NewRequest(http.MethodGet, o.apiAddress+curWeatherMethod, nil)
 	if err != nil {
 		return
@@ -98,39 +91,22 @@ func (o *owmForecaster) GetCurrentWeather(city string) (w Weather, err error) {
 
 	w.Unit = "celsius"
 
-	o.currentWeather[city] = w
-	o.weatherLastCheck[city] = time.Now()
+	return
+}
+
+func (o *owmForecaster) GetForecast(city string) (weathers []*Weather, err error) {
+	weathers, err = o.downloadForecast(city)
+	if err != nil {
+		return nil, err
+	}
 
 	return
 }
 
-func (o *owmForecaster) GetForecast(city string, dt int64) (w Weather, err error) {
-	var weathers []Weather
-	if o.forecastExpiresAt[city].Before(time.Now()) {
-		err = o.downloadForecast(city)
-		if err != nil {
-			return
-		}
-	}
-
-	weathers = o.relevantForecast[city]
-	if weathers == nil {
-		err = o.downloadForecast(city)
-		if err != nil {
-			return
-		}
-	}
-
-	w.Temperature = weathers[findClosest(o.relevantForecast[city], dt)].Temperature
-	w.Unit = "celsius"
-
-	return
-}
-
-func (o *owmForecaster) downloadForecast(city string) error {
+func (o *owmForecaster) downloadForecast(city string) ([]*Weather, error) {
 	req, err := http.NewRequest(http.MethodGet, o.apiAddress+forecastMethod, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	q := url.Values{}
 	q.Add("q", city)
@@ -139,7 +115,7 @@ func (o *owmForecaster) downloadForecast(city string) error {
 
 	resp, err := o.httpClient.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -147,7 +123,7 @@ func (o *owmForecaster) downloadForecast(city string) error {
 			code: resp.StatusCode,
 			msg:  fmt.Sprintf("bad status code: %d", resp.StatusCode),
 		}
-		return err
+		return nil, err
 	}
 
 	data, _ := ioutil.ReadAll(resp.Body)
@@ -155,46 +131,25 @@ func (o *owmForecaster) downloadForecast(city string) error {
 	wResponse := &owmForecastResponse{}
 	err = json.Unmarshal(data, wResponse)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if wResponse.List == nil {
 		err = errors.New("no forecasts")
-		return err
+		return nil, err
 	}
 
-	weathers := make([]Weather, len(wResponse.List))
+	weathers := make([]*Weather, len(wResponse.List))
 	for i := range wResponse.List {
-		weathers[i] = Weather{
+		weathers[i] = &Weather{
 			Unit:        "celsius",
 			Temperature: kelvinToCelsius(wResponse.List[i].Main.Temperature),
 			Timestamp:   wResponse.List[i].Timestamp,
 		}
 	}
 
-	o.relevantForecast[city] = weathers
-	o.forecastExpiresAt[city] = time.Now().Add(time.Hour)
-
-	return nil
+	return weathers, nil
 }
 
-func findClosest(slice []Weather, toFind int64) int {
-	b := 0
-	e := len(slice) - 1
-	var m int
-	for b < e {
-		m = (e + b) / 2
-		if toFind == slice[m].Timestamp {
-			return m
-		}
-		if toFind > slice[m].Timestamp {
-			b = m + 1
-		} else {
-			e = m
-		}
-	}
-	return b
-}
-
-func kelvinToCelsius(kelvin float64) int {
-	return int(math.Round(kelvin - 273))
+func kelvinToCelsius(kelvin float64) int32 {
+	return int32(math.Round(kelvin - 273))
 }

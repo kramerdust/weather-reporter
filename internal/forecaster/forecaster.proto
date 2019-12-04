@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package forecaster;
+
+message Weather {
+    string unit = 1;
+    int32 temperature = 2;
+    int64 timestamp = 3;
+}
+
+message Forecast {
+    repeated Weather weathers = 1;
+}

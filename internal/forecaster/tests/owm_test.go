@@ -5,7 +5,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
-	"time"
 )
 
 var (
@@ -17,7 +16,7 @@ func Test_OWM_Forecast(t *testing.T) {
 	prepare(t)
 
 	owm := forecaster.NewOWM(apiKey, apiAddress)
-	w, err := owm.GetForecast("Moscow", time.Now().Add(time.Hour*3).Unix())
+	w, err := owm.GetForecast("Moscow")
 	if err != nil {
 		t.Errorf("Unexpected error: %s\n", err.Error())
 	}

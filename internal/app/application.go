@@ -96,7 +96,7 @@ func (a *Application) GetForecast(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	weather, err := a.fc.GetForecast(city, int64(dt))
+	weathers, err := a.fc.GetForecast(city)
 	if err != nil {
 		if forecaster.IsNotFound(err) {
 			ctx.SetStatusCode(fasthttp.StatusNotFound)
@@ -106,6 +106,8 @@ func (a *Application) GetForecast(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		return
 	}
+
+	weather := weathers[forecaster.FindClosest(weathers, int64(dt))]
 
 	apiModel := WeatherAPIModel{
 		City:        city,
