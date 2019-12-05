@@ -1,14 +1,13 @@
 package main
 
 import (
-	"github.com/chasex/redis-go-cluster"
+	"github.com/go-redis/redis/v7"
 	"github.com/kramerdust/weather-reporter/internal/app"
 	"github.com/kramerdust/weather-reporter/internal/cache_keeper"
 	"github.com/kramerdust/weather-reporter/internal/forecaster"
 	"log"
 	"os"
 	"strings"
-	"time"
 )
 
 func main() {
@@ -24,19 +23,11 @@ func main() {
 		log.Fatalf("Getting apiAddr err: %s", err.Error())
 	}
 
-	opts := redis.Options{
-		StartNodes:   redisHosts,
-		ConnTimeout: 50 * time.Millisecond,
-		ReadTimeout: 50 * time.Millisecond,
-		WriteTimeout: 50 * time.Millisecond,
-		KeepAlive: 16,
-		AliveTime: 60 * time.Second,
+	opts := redis.ClusterOptions{
+		Addrs: redisHosts,
 	}
 
-	ck, err := cache_keeper.NewRedisCacheKeeper(&opts)
-	if err != nil {
-		log.Fatalf("Connecting to redis cluster err: %s", err.Error())
-	}
+	ck := cache_keeper.NewRedisCacheKeeper(&opts)
 
 	f := forecaster.WithCacheKeeper(forecaster.NewOWM(apiKey, apiAddr), ck)
 	application := app.NewApp(f)

@@ -41,7 +41,7 @@ func easyjsonDadbda93DecodeGithubComKramerdustWeatherReporterInternalApp(in *jle
 		case "unit":
 			out.Unit = string(in.String())
 		case "temperature":
-			out.Temperature = int(in.Int())
+			out.Temperature = int32(in.Int32())
 		default:
 			in.SkipRecursive()
 		}
@@ -69,7 +69,7 @@ func easyjsonDadbda93EncodeGithubComKramerdustWeatherReporterInternalApp(out *jw
 	{
 		const prefix string = ",\"temperature\":"
 		out.RawString(prefix)
-		out.Int(int(in.Temperature))
+		out.Int32(int32(in.Temperature))
 	}
 	out.RawByte('}')
 }
