@@ -14,8 +14,8 @@ import (
 const forecastMethod = "/data/2.5/forecast"
 const curWeatherMethod = "/data/2.5/weather"
 
-func NewOWM(apiKey, apiAddress string) Forecaster {
-	return &owmForecaster{
+func NewOWM(apiKey, apiAddress string) *OWMForecaster {
+	return &OWMForecaster{
 		httpClient:        &http.Client{},
 		apiKey:            apiKey,
 		apiAddress:        apiAddress,
@@ -26,7 +26,7 @@ func NewOWM(apiKey, apiAddress string) Forecaster {
 	}
 }
 
-type owmForecaster struct {
+type OWMForecaster struct {
 	httpClient        *http.Client
 	apiKey            string
 	apiAddress        string
@@ -57,7 +57,7 @@ type main struct {
 	Temperature float64 `json:"temp"`
 }
 
-func (o *owmForecaster) GetCurrentWeather(city string) (w Weather, err error) {
+func (o *OWMForecaster) GetCurrentWeather(city string) (w Weather, err error) {
 	req, err := http.NewRequest(http.MethodGet, o.apiAddress+curWeatherMethod, nil)
 	if err != nil {
 		return
@@ -94,7 +94,7 @@ func (o *owmForecaster) GetCurrentWeather(city string) (w Weather, err error) {
 	return
 }
 
-func (o *owmForecaster) GetForecast(city string) (weathers []*Weather, err error) {
+func (o *OWMForecaster) GetForecast(city string) (weathers []*Weather, err error) {
 	weathers, err = o.downloadForecast(city)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (o *owmForecaster) GetForecast(city string) (weathers []*Weather, err error
 	return
 }
 
-func (o *owmForecaster) downloadForecast(city string) ([]*Weather, error) {
+func (o *OWMForecaster) downloadForecast(city string) ([]*Weather, error) {
 	req, err := http.NewRequest(http.MethodGet, o.apiAddress+forecastMethod, nil)
 	if err != nil {
 		return nil, err

@@ -135,6 +135,8 @@ func (a *Application) GetCurrent(ctx *fasthttp.RequestCtx) {
 	}
 	city := string(cityBytes)
 
+	log.Printf("current weather request, city: %q", city)
+
 	weather, err := a.fc.GetCurrentWeather(city)
 	if err != nil {
 		if forecaster.IsNotFound(err) {

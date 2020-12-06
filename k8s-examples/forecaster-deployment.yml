@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+    name: forecaster
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: forecaster
+  template:
+    metadata:
+      labels:
+        app: forecaster
+    spec:
+      containers:
+      - image: weather-forecaster
+        name: forecaster
+        imagePullPolicy: Never
+        env:
+        - name: FORECASTER_PORT
+          value: "8080"
+        - name: FORECASTER_API_KEY
+          value: "your_key"
+        - name: FORECASTER_API_ADDR
+          value: "http://api.openweathermap.org"

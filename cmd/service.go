@@ -23,13 +23,17 @@ func main() {
 		log.Fatalf("Getting apiAddr err: %s", err.Error())
 	}
 
-	opts := redis.ClusterOptions{
-		Addrs: redisHosts,
+	var f forecaster.Forecaster = forecaster.NewOWM(apiKey, apiAddr)
+
+	cacheType := os.Getenv("CACHE_TYPE")
+	if cacheType == "redis" {
+		opts := redis.ClusterOptions{
+			Addrs: redisHosts,
+		}
+		ck := cache_keeper.NewRedisCacheKeeper(&opts)
+		f = forecaster.WithCacheKeeper(f, ck)
 	}
 
-	ck := cache_keeper.NewRedisCacheKeeper(&opts)
-
-	f := forecaster.WithCacheKeeper(forecaster.NewOWM(apiKey, apiAddr), ck)
 	application := app.NewApp(f)
 	log.Fatal(application.Run(port))
 }
